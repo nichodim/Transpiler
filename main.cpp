@@ -1,8 +1,24 @@
+#include <bits/stdc++.h> 
 #include <iostream>
 #include <string>
+#include <vector> 
+
+class TokenTypes {
+    public:
+        enum tokens {
+            EOF, NEWLINE, NUMBER, IDENT, STRING,
+            // Keywords.
+            LABEL, GOTO, PRINT, INPUT, LET, IF, 
+            THEN, ENDIF, WHILE, REPEAT, ENDWHILE
+            // Operators.
+            EQ, PLUS, MINUS, ASTERISK, SLASH, 
+            EQEQ, NOTEQ, LT, LTEQ, GT, GTEQ
+        }; 
+}; 
 
 class Lexer {
     std::string source;
+    std::vector<char> tokens = [];
     int curIndex = -1;
     char curChar;
 
@@ -44,7 +60,10 @@ int main() {
     std::string source;
     std::cin >> source;
 
+    TokenTypes tokentypes;
     Lexer lexer(source);
+
+    // std::cout << tokentypes << std::endl
 
     return 0; 
 }
