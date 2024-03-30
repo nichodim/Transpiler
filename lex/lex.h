@@ -37,4 +37,6 @@ private:
 
 public:
     Lexer(std::string _source);
+
+    std::vector<Token> getTokens(); 
 };

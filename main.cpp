@@ -1,5 +1,6 @@
 #include <fstream>
 #include "lex/lex.h"
+#include "parse.cpp"
 
 #define fileName ("testfile.txt") 
 
@@ -15,8 +16,8 @@ std::string readFile() {
 }
 
 int main() {
-    std::string fileText = readFile(); 
-    Lexer lexer(fileText);
+    Lexer lexer(readFile());
+    Parser parser(lexer.getTokens()); 
 
     return 0; 
 }

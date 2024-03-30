@@ -92,10 +92,6 @@ void Lexer::pushNumberToken() {
 }
 
 bool Lexer::tryPushKeywordToken(std::string text) {
-    for (char c : text) {
-        if (std::islower(c)) return false;
-    }
-
     if (text == "LABEL") pushToken(text, Ttype::LABEL);
     else if (text == "GOTO") pushToken(text, Ttype::GOTO); 
     else if (text == "PRINT") pushToken(text, Ttype::PRINT); 
@@ -114,14 +110,20 @@ bool Lexer::tryPushKeywordToken(std::string text) {
 
 void Lexer::pushIdentKeyToken() {
     std::string text; 
+    bool canBeKeyword = true; 
+
     text += curChar; 
     while (std::isalpha(peek())) {
         nextChar(); 
         text += curChar; 
-    }
 
-    bool success = tryPushKeywordToken(text);
-    if (!success) pushToken(text, Ttype::IDENT); 
+        if (std::islower(curChar) || std::isdigit(curChar) || curChar == '_') canBeKeyword = false; 
+
+        if (canBeKeyword) {
+            if (tryPushKeywordToken(text)) return; 
+        }
+    }
+    pushToken(text, Ttype::IDENT); 
 }
 
 void Lexer::check() {
@@ -193,9 +195,14 @@ void Lexer::check() {
 
     check();
 }
+
 Lexer::Lexer(std::string _source) {
     source = _source;
 
     removeWhiteSpace();
     check();
+}
+
+std::vector<Token> Lexer::getTokens() {
+    return tokens; 
 }
