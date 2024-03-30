@@ -4,7 +4,7 @@
 #include <algorithm>
 
 enum class Ttype {
-    NEWLINE, NUMBER, IDENT, STRING,
+    EOTF, NEWLINE, NUMBER, IDENT, STRING,
     // Keywords.
     LABEL, GOTO, PRINT, INPUT, LET, IF, 
     THEN, ENDIF, WHILE, REPEAT, ENDWHILE,
@@ -158,12 +158,14 @@ private:
         // Next character, base case if done with source string
         bool hasMore = tryNextChar();
         if (!hasMore) {
+            pushToken("\0", Ttype::EOTF); 
+
             std::cout << source << std::endl;
-            std::cout << std::endl;
             std::cout << "Tokens: " << tokens.size() << " -> ";
             for (unsigned short i = 0; i < tokens.size(); i++) {
                 std::cout << i << ": " << tokens[i].text << " ";
             }
+
             return;
         }
 
@@ -171,7 +173,6 @@ private:
         switch (curChar)  {
             // Truly single character tokens
             case '\n': 
-                std::cout << "new lineeee" << std::endl;
                 pushToken("\n", Ttype::NEWLINE); 
                 break;
             case '+':
@@ -237,7 +238,7 @@ int main() {
     // std::string source;
     // std::getline(std::cin, source);
 
-    Lexer lexer("LET 5 = 9 IF 6 != 5 + 45");
+    Lexer lexer("LET 5 = 9 IF 6 != 5 + 45\n");
 
     return 0; 
 }
