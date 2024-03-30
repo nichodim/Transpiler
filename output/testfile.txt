@@ -1,2 +1,3 @@
 LET 5 = 9 IF 6 != 5 + 45
-heyyo
+heyyo GOTO 5
+    heyyo 6
