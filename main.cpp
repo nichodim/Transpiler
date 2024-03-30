@@ -2,6 +2,9 @@
 #include <iostream>
 #include <vector> 
 #include <algorithm>
+#include <fstream>
+
+#define fileName ("testfile.txt") 
 
 enum class Ttype {
     EOTF, NEWLINE, NUMBER, IDENT, STRING,
@@ -160,7 +163,7 @@ private:
         if (!hasMore) {
             pushToken("\0", Ttype::EOTF); 
 
-            std::cout << source << std::endl;
+            // std::cout << source << std::endl;
             std::cout << "Tokens: " << tokens.size() << " -> ";
             for (unsigned short i = 0; i < tokens.size(); i++) {
                 std::cout << i << ": " << tokens[i].text << " ";
@@ -233,12 +236,20 @@ public:
     }
 };
 
-int main() {
-    // std::cout << "Give source: ";
-    // std::string source;
-    // std::getline(std::cin, source);
+std::string readFile() {
+    std::string fileText, curLine; 
+    std::ifstream file(fileName); 
+    while (std::getline(file, curLine)) {
+        fileText += curLine; 
+        fileText += '\n'; 
+    }
+    file.close(); 
+    return fileText; 
+}
 
-    Lexer lexer("LET 5 = 9 IF 6 != 5 + 45\n");
+int main() {
+    std::string fileText = readFile(); 
+    Lexer lexer(fileText);
 
     return 0; 
 }

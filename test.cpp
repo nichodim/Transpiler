@@ -1,14 +1,36 @@
+#include <fstream>
 #include <iostream>
 
-using namespace std;
+void outputToFile() {
+    std::ofstream file("testfile.txt"); 
+    file << " hello";
+    file.close(); 
+}
+
+void inputToFile() {
+    std::ifstream file("testfile.txt"); 
+    std::string text; 
+    file >> text;
+    std::cout << text << std::endl; 
+    file.close(); 
+}
 
 int main ()
 {
-    string Word, Sentence;
+    // // output
+    // std::ofstream file("testfile.txt"); 
+    // file << " hello";
+    // file.close(); 
 
-    cout << "Please enter a word: "; getline(cin, Word); 
-    cout << endl << Word;
+    // // input
+    // std::ifstream file("testfile.txt"); 
+    // std::string text; 
+    // file >> text;
+    // std::cout << text << std::endl; 
+    // file.close(); 
 
-    cout << "\nPlease enter a sentence: "; getline(cin, Sentence); 
-    cout << endl << Sentence;
+    outputToFile(); 
+    inputToFile(); 
+
+    return 0; 
 }
