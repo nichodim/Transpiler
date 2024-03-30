@@ -58,6 +58,7 @@ void Lexer::pushMultiToken(std::string text, std::vector<Ttype> types) {
 
     // Token match, push and send success signal
     if (text == realText) {
+        std::cout << text << realText << std::endl;
         pushToken(text, types[curLast]); 
         for (unsigned short i = 0; i < text.length() - 1; i++) {
             nextChar(); 
@@ -67,7 +68,10 @@ void Lexer::pushMultiToken(std::string text, std::vector<Ttype> types) {
 
     // Didnt match, recall with shortened token
     std::string newText = text.substr(0, newLength);
-    std::vector<Ttype> newTypes(newLength); std::copy_n(types.begin(), curLast - 1, newTypes.begin()); 
+    std::vector<Ttype> newTypes; 
+    for (unsigned short i = 0; i < types.size() - 1; i++) {
+        newTypes.push_back(types[i]); 
+    }
     pushMultiToken(newText, newTypes);
 }
 
@@ -133,10 +137,10 @@ void Lexer::check() {
         pushToken("\0", Ttype::EOTF); 
 
         // std::cout << source << std::endl;
-        std::cout << "Tokens: " << tokens.size() << " -> ";
-        for (unsigned short i = 0; i < tokens.size(); i++) {
-            std::cout << i << ": " << tokens[i].text << " ";
-        }
+        // std::cout << "Tokens: " << tokens.size() << " -> ";
+        // for (unsigned short i = 0; i < tokens.size(); i++) {
+        //     std::cout << i << ": " << tokens[i].text << " ";
+        // }
 
         return;
     }
