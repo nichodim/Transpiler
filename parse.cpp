@@ -6,6 +6,7 @@ class Parser {
 private:
     std::vector<Token> tokens; 
     unsigned short curIndex = 0; 
+    unsigned short activeIfs = 0, activeWhiles = 0; 
 
     void print(std::string message) {
         std::cout << message << std::endl; 
@@ -33,19 +34,17 @@ private:
         return nextToken; 
     }
 
-    // void program(); 
-    // void statement(); 
-    // void comparison(); 
-    // void expression(); 
-    // void term(); 
-    // void unary(); 
-    // void primary(); 
-    // void nl(); 
-
     void endStatement() {
-        if (token().type != Ttype::ENDWHILE) {
-            nl(); 
-            statement(); 
+        switch (token().type) {
+            case Ttype::ENDWHILE:
+                if (activeWhiles <= 0) error("Invalid while loop - Extra ENDWHILE"); 
+                activeWhiles--; return; 
+            case Ttype::ENDIF:
+                if (activeIfs <= 0) error("Invalid if statement - Extra ENDIF"); 
+                activeIfs--; return; 
+            default:
+                nl(); 
+                statement(); 
         }
     }
 
@@ -68,6 +67,7 @@ private:
             case Ttype::IF:
                 print("IF");
                 nextToken(); 
+                activeIfs++; 
                 comparison(); 
                 if (token().type == Ttype::THEN) print("THEN"); 
                 else error("Invalid if statement - Missing THEN"); 
@@ -82,6 +82,7 @@ private:
             case Ttype::WHILE:
                 print("WHILE"); 
                 nextToken(); 
+                activeWhiles++; 
                 comparison(); 
                 if (token().type == Ttype::REPEAT) print("REPEAT"); 
                 else error("Invalid while loop - Missing REPEAT"); 
