@@ -19,7 +19,13 @@ std::string readFile() {
 
 int main() {
     Lexer lexer(readFile());
-    Parser parser(lexer.getTokens()); 
+    std::vector<Token> tokens = lexer.getTokens(); 
+    for (Token token : tokens) {
+        token.print(); 
+        std::cout << token.text << " ";
+    }
+    std::cout << std::endl;
+    Parser parser(tokens); 
 
     return 0; 
 }

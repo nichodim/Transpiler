@@ -39,6 +39,6 @@ public:
         };
 
         std::string typeAsString = TtypeInttoString[as_integer(type)]; 
-        std::cout << "text: " << text << " : " << typeAsString << std::endl; 
+        std::cout << text << " : " << typeAsString << std::endl; 
     }
 };

@@ -1,1 +1,3 @@
-LET >= > + HI WHILEmAN
+LET var = 9
+WHILE var > 3 REPEAT
+LET var = var - 1 ENDWHILE
