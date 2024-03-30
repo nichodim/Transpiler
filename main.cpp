@@ -30,21 +30,27 @@ private:
     unsigned short curIndex = -1;
     char curChar;
 
-    void print(std::string text) {
-        std::cout << text << std::endl;
-    }
-
     // Mutate to next character, returns false when all processed
-    bool nextChar() {
+    bool tryNextChar() {
         curIndex++;
         if (curIndex >= source.length()) return false; 
-
         curChar = source[curIndex]; 
         return true; 
     }
+    // Same but returns error instead
+    void nextChar() {
+        curIndex++;
+        if (curIndex >= source.length()) error("Invalid Syntax");
+        curChar = source[curIndex]; 
+    }
+
     std::string peek(unsigned short depth) {
         if (curIndex + depth >= source.length()) return "\0";
         return source.substr(curIndex, depth);
+    }
+    char peek() {
+        if (curIndex + 1 >= source.length()) return '\0';
+        return source[curIndex + 1];
     }
 
     // Removes whitespace except \n
@@ -83,8 +89,8 @@ private:
         // Token match, push and send success signal
         if (text == realText) {
             pushToken(text, types[curLast]); 
-            for (unsigned short i = 0; i < text.length(); i++) {
-                nextChar();
+            for (unsigned short i = 0; i < text.length() - 1; i++) {
+                nextChar(); 
             }
             return;
         }
@@ -96,23 +102,22 @@ private:
     }
 
     void pushStringToken() {
-        nextChar(); 
+        nextChar();
         std::string text;
         while (curChar != '"') {
             text += curChar; 
             nextChar(); 
         }
-
-        nextChar(); 
         pushToken(text, Ttype::STRING);
     }
 
     void pushNumberToken() {
         std::string text; 
-        do {
-            text += curChar; 
-            nextChar(); 
-        } while (isdigit(curChar));
+        text += curChar;
+        while (std::isdigit(peek())) {
+            nextChar();
+            text += curChar;
+        }
         pushToken(text, Ttype::NUMBER); 
     }
 
@@ -139,10 +144,11 @@ private:
 
     void pushIdentKeyToken() {
         std::string text; 
-        do {
-            text += curChar; 
+        text += curChar; 
+        while (std::isalpha(peek())) {
             nextChar(); 
-        } while (std::isalpha(curChar));
+            text += curChar; 
+        }
 
         bool success = tryPushKeywordToken(text);
         if (!success) pushToken(text, Ttype::IDENT); 
@@ -150,14 +156,14 @@ private:
 
     void check() {
         // Next character, base case if done with source string
-        bool hasMore = nextChar();
+        bool hasMore = tryNextChar();
         if (!hasMore) {
+            std::cout << source << std::endl;
             std::cout << std::endl;
-            std::cout << "Tokens:" << tokens.size() << " ";
+            std::cout << "Tokens: " << tokens.size() << " -> ";
             for (unsigned short i = 0; i < tokens.size(); i++) {
-                std::cout << tokens[i].text << " ";
+                std::cout << i << ": " << tokens[i].text << " ";
             }
-            std::cout << std::endl;
             return;
         }
 
@@ -165,6 +171,7 @@ private:
         switch (curChar)  {
             // Truly single character tokens
             case '\n': 
+                std::cout << "new lineeee" << std::endl;
                 pushToken("\n", Ttype::NEWLINE); 
                 break;
             case '+':
@@ -219,7 +226,6 @@ private:
 public:
     Lexer(std::string _source) {
         source = _source;
-        std::cout << source << std::endl;
 
         removeWhiteSpace();
         check();
