@@ -58,7 +58,6 @@ void Lexer::pushMultiToken(std::string text, std::vector<Ttype> types) {
 
     // Token match, push and send success signal
     if (text == realText) {
-        std::cout << text << realText << std::endl;
         pushToken(text, types[curLast]); 
         for (unsigned short i = 0; i < text.length() - 1; i++) {
             nextChar(); 
