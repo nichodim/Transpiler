@@ -1,8 +1,9 @@
 #include <fstream>
 #include <vector>
+#include <iostream>
 #include "lex/lex.h"
 #include "token/token.h"
-#include "parse.cpp"
+#include "parse/parse.h"
 
 #define fileName ("testfile.txt") 
 
