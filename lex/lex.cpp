@@ -36,7 +36,7 @@ std::string Lexer::peek(unsigned short depth) {
     while (isSpace(source[peekIndex])) {
         if (++peekIndex >= source.length()) return "\0";
     }
-    return source.substr(curIndex, peekIndex);
+    return source.substr(curIndex, peekIndex - curIndex - 1);
 }
 char Lexer::peek() {
     unsigned short peekIndex = curIndex + 1; 
@@ -122,7 +122,6 @@ void Lexer::pushIdentKeyToken() {
         nextChar(); 
         text += curChar; 
     }
-    // std::cout << text << std::endl; 
     if (!tryPushKeywordToken(text)) pushToken(text, Ttype::IDENT);
 }
 
