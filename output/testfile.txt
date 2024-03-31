@@ -1,5 +1,5 @@
-LET var = 9
-WHILE var > 3 REPEAT
-LET var = var - 1 ENDWHILE
-IF var == 3 THEN
-LET var = 2 * 6 ENDIF
+INPUT var
+IF 3 > 2 THEN
+IF 5 < var THEN
+    PRINT "yeah"
+ENDIF ENDIF

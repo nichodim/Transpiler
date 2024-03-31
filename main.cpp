@@ -22,7 +22,6 @@ int main() {
     std::vector<Token> tokens = lexer.getTokens(); 
     for (Token token : tokens) {
         token.print(); 
-        std::cout << token.text << " ";
     }
     std::cout << std::endl;
     Parser parser(tokens); 

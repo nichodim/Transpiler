@@ -9,7 +9,7 @@ private:
     unsigned short activeIfs = 0, activeWhiles = 0; 
 
     void print(std::string message) {
-        std::cout << message << std::endl; 
+        // std::cout << message << std::endl; 
     }
     void success() {
         std::cout << "Done" << std::endl; 
@@ -35,17 +35,8 @@ private:
     }
 
     void endStatement() {
-        switch (token().type) {
-            case Ttype::ENDWHILE:
-                if (activeWhiles <= 0) error("Invalid while loop - Extra ENDWHILE"); 
-                activeWhiles--; return; 
-            case Ttype::ENDIF:
-                if (activeIfs <= 0) error("Invalid if statement - Extra ENDIF"); 
-                activeIfs--; return; 
-            default:
-                nl(); 
-                statement(); 
-        }
+        nl(); 
+        statement(); 
     }
 
     void program() {
@@ -72,11 +63,15 @@ private:
                 if (token().type == Ttype::THEN) print("THEN"); 
                 else error("Invalid if statement - Missing THEN"); 
                 nextToken(); 
-                nl(); 
-                statement(); 
-                if (token().type == Ttype::ENDIF) print("ENDIF"); 
-                else error("Invalid if statement - Missing ENDIF"); 
-                nextToken(); 
+                endStatement(); 
+                break; 
+            case Ttype::ENDIF:
+                print("ENDIF");
+                while (token().type == Ttype::ENDIF) {
+                    if (activeIfs <= 0) error("Invalid if statement - Extra ENDIF"); 
+                    activeIfs--;
+                    nextToken(); 
+                }
                 endStatement(); 
                 break; 
             case Ttype::WHILE:
@@ -87,13 +82,16 @@ private:
                 if (token().type == Ttype::REPEAT) print("REPEAT"); 
                 else error("Invalid while loop - Missing REPEAT"); 
                 nextToken(); 
-                nl(); 
-                statement(); 
-                if (token().type == Ttype::ENDWHILE) print("ENDWHILE"); 
-                else error("Invalid while loop - Missing ENDWHILE"); 
-                nextToken(); 
-                nl(); 
-                statement(); 
+                endStatement(); 
+                break; 
+            case Ttype::ENDWHILE:
+                print("ENDWHILE");
+                while (token().type == Ttype::ENDWHILE) {
+                    if (activeWhiles <= 0) error("Invalid while loop - Extra ENDWHILE"); 
+                    activeWhiles--;
+                    nextToken(); 
+                }
+                endStatement(); 
                 break; 
             case Ttype::LABEL:
                 print("LABEL"); 
@@ -126,7 +124,7 @@ private:
             case Ttype::INPUT:
                 print("INPUT"); 
                 nextToken(); 
-                if (token().type != Ttype::IDENT) print("IDENT"); 
+                if (token().type == Ttype::IDENT) print("IDENT"); 
                 else error("Invalid input - Missing identifier"); 
                 nextToken(); 
                 endStatement();
@@ -188,7 +186,11 @@ private:
         nextToken(); 
     }
     void nl() {
-        if (token().type == Ttype::EOTF) success(); 
+        if (token().type == Ttype::EOTF) {
+            if (activeIfs > 0) error("Invalid if statement(s) - Missing ENDIF"); 
+            if (activeWhiles > 0) error("Invalid while loop(s) - Missing ENDWHILE"); 
+            success(); 
+        }
         if (token().type != Ttype::NEWLINE) error("Invalid formatting: Missing new line"); 
         do {
             nextToken(); 

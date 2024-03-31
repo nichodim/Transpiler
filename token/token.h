@@ -27,8 +27,7 @@ public:
         type = _type;
     }
     void print() {
-        std::string TtypeInttoString[] =
-        {
+        std::string TtypeInttoString[] = {
             "EOTF", "NEWLINE", "NUMBER", "IDENT", "STRING",
             // Keywords.
             "LABEL", "GOTO", "PRINT", "INPUT", "LET", "IF", 
@@ -38,7 +37,9 @@ public:
             "EQEQ", "NOTEQ", "LT", "LTEQ", "GT", "GTEQ", "NOT"
         };
 
+        std::string outputText = text;
+        if (type == Ttype::NEWLINE) outputText = "/n";
         std::string typeAsString = TtypeInttoString[as_integer(type)]; 
-        std::cout << text << " : " << typeAsString << std::endl; 
+        std::cout << outputText << " : " << typeAsString << std::endl; 
     }
 };
