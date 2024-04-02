@@ -46,6 +46,11 @@ char Lexer::peek() {
     }
     return source[peekIndex];
 }
+char Lexer::rawPeek() {
+    unsigned short peekIndex = curIndex + 1; 
+    if (peekIndex >= source.length()) return '\0';
+    return source[peekIndex];
+}
 
 void Lexer::error(std::string message) {
     std::cout << "Lexing Error: " << message << std::endl; 
@@ -83,6 +88,14 @@ void Lexer::pushMultiToken(std::string text, std::vector<Ttype> types) {
     pushMultiToken(newText, newTypes);
 }
 void Lexer::pushStringToken() {
+    /*unsigned short realValueCount = 0;
+    unsigned short i = 0;
+    std::string text;
+    while (rawPeek() != '"') {
+        if (!isSpace(rawPeek())) realValueCount++;
+        text += rawPeek();
+    }*/
+
     nextChar();
     std::string text;
     while (curChar != '"') {

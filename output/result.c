@@ -2,12 +2,12 @@
 int main(void){
 float a = 0;
 while (a < 1){
-printf("Enternumberofscores:");
+printf("Entern umbero fs cores:");
 scanf("%v", &a);
 }
 float b = 0;
 float s = 0;
-printf("Enteronevalueatatime:");
+printf("Entero nev aluea ta t ime:");
 while (b < a){
 scanf("%v", &c);
 s = s + c;
