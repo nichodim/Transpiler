@@ -71,18 +71,21 @@ void Parser::statement() {
             nextToken(); 
             if (token().type == Ttype::STRING) {
                 print("STRING"); 
-                emit.pushToBody(token().text + ");\n");
+                emit.pushToBody("\"" + token().text + "\"");
                 nextToken(); 
             }
             else expression(); 
+            emit.pushToBody(");");
             endStatement(); 
             break; 
 
         case Ttype::IF:
             print("IF");
+            emit.pushToBody("if (");
             nextToken(); 
             blockDepth++; 
             comparison(); 
+            emit.pushToBody("){");
             if (token().type == Ttype::THEN) print("THEN"); 
             else error("Invalid if statement - Missing THEN"); 
             nextToken(); 
@@ -91,6 +94,7 @@ void Parser::statement() {
         case Ttype::ENDIF:
             print("ENDIF");
             while (token().type == Ttype::ENDIF) {
+                emit.pushToBody("}");
                 if (blockDepth <= 0) error("Invalid if statement - Extra ENDIF"); 
                 blockDepth--; updateIdents(); 
                 nextToken(); 
@@ -99,9 +103,11 @@ void Parser::statement() {
             break; 
         case Ttype::WHILE:
             print("WHILE"); 
+            emit.pushToBody("while (");
             nextToken(); 
             blockDepth++;
             comparison(); 
+            emit.pushToBody("){");
             if (token().type == Ttype::REPEAT) print("REPEAT"); 
             else error("Invalid while loop - Missing REPEAT"); 
             nextToken(); 
@@ -110,6 +116,7 @@ void Parser::statement() {
         case Ttype::ENDWHILE:
             print("ENDWHILE");
             while (token().type == Ttype::ENDWHILE) {
+                emit.pushToBody("}");
                 if (blockDepth <= 0) error("Invalid while loop - Extra ENDWHILE"); 
                 blockDepth--; updateIdents(); 
                 nextToken(); 
@@ -128,32 +135,40 @@ void Parser::statement() {
 
         case Ttype::LABEL:
             print("LABEL"); 
+            emit.pushToBody("auto ");
             nextToken(); 
             if (token().type == Ttype::IDENT) print("IDENT"); 
             else error("Invalid declaration - Missing identifier"); 
+            emit.pushToBody(token().text + ";");
             addIdent(token().text); 
             nextToken(); 
             endStatement();
             break; 
         case Ttype::LET:
             print("LET"); 
+            emit.pushToBody("auto ");
             nextToken(); 
             if (token().type == Ttype::IDENT) print("IDENT"); 
             else error("Invalid assignment - Missing identifier"); 
             if (!identExists(token().text)) addIdent(token().text); 
+            emit.pushToBody(token().text);
             nextToken(); 
             if (token().type == Ttype::EQ) print("=");
             else error("Invalid assignment - Missing ="); 
+            emit.pushToBody(" = ");
             nextToken(); 
             expression(); 
+            emit.pushToBody(";");
             endStatement();
             break; 
         case Ttype::INPUT:
             print("INPUT"); 
+            emit.pushToBody("scanf(");
             nextToken(); 
             if (token().type == Ttype::IDENT) print("IDENT"); 
             else error("Invalid input - Missing identifier"); 
-            addIdent(token().text); 
+            if (!identExists(token().text)) addIdent(token().text); 
+            emit.pushToBody("\"%v\",&" + token().text + ");");
             nextToken(); 
             endStatement();
             break; 
@@ -178,6 +193,7 @@ void Parser::comparison() {
     expression(); 
     bool hasInitialEquality = false; 
     while (isEquality()) {
+        emit.pushToBody(" " + token().text + " ");
         hasInitialEquality = true; 
         nextToken(); 
         expression(); 
@@ -188,6 +204,7 @@ void Parser::expression() {
     term(); 
     while (token().type == Ttype::PLUS || token().type == Ttype::MINUS) {
         print("PLUS/MINUS"); 
+        emit.pushToBody(" " + token().text + " ");
         nextToken(); 
         term(); 
     }
@@ -196,6 +213,7 @@ void Parser::term() {
     unary(); 
     while (token().type == Ttype::ASTERISK || token().type == Ttype::SLASH) {
         print("MULTIPLY/DIVIDE"); 
+        emit.pushToBody(" " + token().text + " ");
         nextToken(); 
         unary(); 
     }
@@ -203,6 +221,7 @@ void Parser::term() {
 void Parser::unary() {
     if (token().type == Ttype::MINUS) {
         print("NEGATIVE"); 
+        emit.pushToBody("-");
         nextToken(); 
     }
     primary(); 
@@ -210,15 +229,18 @@ void Parser::unary() {
 void Parser::primary() {
     if (token().type == Ttype::INTEGER || token().type == Ttype::FLOAT) {
         print("INTEGER/FLOAT"); 
+        emit.pushToBody(token().text);
     }
     else if (token().type == Ttype::IDENT) {
         if (!identExists(token().text)) error("Invalid primary - Using undefined identifier"); 
         print("IDENT"); 
+        emit.pushToBody(token().text);
     }
     else error("Invalid primary - Missing number or identifier"); 
     nextToken(); 
 }
 void Parser::nl() {
+    emit.pushToBody("\n");
     if (token().type == Ttype::EOTF) {
         if (blockDepth > 0) error("Invalid block depth - Missing END(s)"); 
         success(); 
@@ -228,7 +250,6 @@ void Parser::nl() {
         nextToken(); 
     } while (token().type == Ttype::NEWLINE); 
     print("NEWLINE"); 
-    emit.pushToBody("\n");
 }
 
 Parser::Parser(std::vector<Token> _tokens) {

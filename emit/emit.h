@@ -18,7 +18,7 @@ public:
     }
     void pushText() {
         pushBoilerPlate(); 
-        std::ofstream file("result.txt"); 
+        std::ofstream file("result.c"); 
         file << head;
         file << body;
         file.close(); 
