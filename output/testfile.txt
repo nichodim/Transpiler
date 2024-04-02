@@ -1,5 +1,6 @@
-INPUT var
 IF 3 > 2 THEN
-IF 5 < var THEN
-    PRINT "yeah"
-ENDIF ENDIF
+    PRINT "hi :/"
+    WHILE 56.2 < 100 REPEAT
+        PRINT "looop"
+    ENDWHILE
+ENDIF

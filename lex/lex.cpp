@@ -49,6 +49,7 @@ char Lexer::peek() {
 
 void Lexer::error(std::string message) {
     std::cout << "Lexing Error: " << message << std::endl; 
+    std::cout << "Last text read: " << tokens[tokens.size() - 1].text << std::endl;
     std::exit(0);
 }
 
@@ -92,12 +93,19 @@ void Lexer::pushStringToken() {
 }
 void Lexer::pushNumberToken() {
     std::string text; 
+    bool hasDecimal = false; 
     text += curChar;
-    while (std::isdigit(peek())) {
+    while (std::isdigit(peek()) || peek() == '.') {
+        if (curChar == '.') {
+            if (hasDecimal) error("Invalid number syntax");
+            hasDecimal = true;
+        }
         nextChar();
         text += curChar;
     }
-    pushToken(text, Ttype::NUMBER); 
+    if (text == ".") error("Invalid syntax"); 
+    if (hasDecimal) pushToken(text, Ttype::FLOAT); 
+    else pushToken(text, Ttype::INTEGER); 
 }
 bool Lexer::tryPushKeywordToken(std::string text) {
     if (text == "IF") pushToken(text, Ttype::IF); 
@@ -181,7 +189,7 @@ void Lexer::check() {
     }
 
     // Number and Ident/Keyword special cases
-    if (std::isdigit(curChar)) pushNumberToken(); 
+    if (std::isdigit(curChar) || curChar == '.') pushNumberToken(); 
     else if (std::isalpha(curChar) || curChar == '_') pushIdentKeyToken(); 
     else error("Invalid syntax"); 
 

@@ -8,7 +8,7 @@ auto as_integer(Enumeration const value)
     return static_cast<typename std::underlying_type<Enumeration>::type>(value);
 }
 std::string TtypeInttoString[] = {
-    "EOTF", "NEWLINE", "NUMBER", "IDENT", "STRING",
+    "EOTF", "NEWLINE", "FLOAT", "INTEGER", "IDENT", "STRING",
     // Keywords.
     "LABEL", "GOTO", "PRINT", "INPUT", "LET", "IF", 
     "THEN", "ENDIF", "WHILE", "REPEAT", "ENDWHILE",

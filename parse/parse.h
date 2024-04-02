@@ -1,12 +1,17 @@
 #include <vector>
+#include <cassert>
+#include <map>
 #include "../token/token.h"
+#include "../emit/emit.h"
 #pragma once
 
 class Parser {
 private:
+    Emitter emit;
     std::vector<Token> tokens; 
     unsigned short curIndex = 0; 
-    unsigned short activeIfs = 0, activeWhiles = 0; 
+    unsigned short blockDepth = 0;
+    std::map<std::string, short> idents; 
 
     // Ends case helpers
     void print(std::string message);
@@ -17,6 +22,11 @@ private:
     Token token();
     void nextToken();
     Token peek();
+
+    // Scope managing ident functions
+    bool identExists(std::string ident);
+    void addIdent(std::string text);
+    void updateIdents(); // Removes idents out of scope
 
     // Convenient line reset in statements
     void endStatement();

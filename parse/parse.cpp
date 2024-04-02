@@ -1,16 +1,21 @@
 #include <vector>
 #include <iostream>
+#include <cassert>
+#include <map>
 #include "../token/token.h"
+#include "../emit/emit.h"
 #include "parse.h"
 
 void Parser::print(std::string message) {
     std::cout << message << std::endl; 
 }
 void Parser::success() {
+    emit.pushText();
     std::cout << "Done" << std::endl; 
     std::exit(0);
 }
 void Parser::error(std::string message) {
+    emit.pushText();
     std::cout << "Parsing Error: " << message << std::endl; 
     token().print(); 
     std::exit(0);
@@ -29,6 +34,26 @@ Token Parser::peek() {
     return nextToken; 
 }
 
+bool Parser::identExists(std::string ident) {
+    if (idents.find(ident) != idents.end()) return true; 
+    return false; 
+}
+void Parser::addIdent(std::string text) {
+    if (identExists(text)) error("Invalid declaration - variable already in use");
+    idents.insert({ text, blockDepth });
+}
+void Parser::updateIdents() {
+    std::vector<std::string> idents_to_delete;
+    for (auto const& ident : idents) {
+        if (ident.second > blockDepth) {
+            idents_to_delete.push_back(ident.first);
+        }
+    }
+    for (std::string ident : idents_to_delete) {
+        idents.erase(ident);
+    }
+}
+
 void Parser::endStatement() {
     nl(); 
     statement(); 
@@ -42,18 +67,21 @@ void Parser::statement() {
     switch(token().type) {
         case Ttype::PRINT:
             print("PRINT"); 
+            emit.pushToBody("printf(");
             nextToken(); 
             if (token().type == Ttype::STRING) {
                 print("STRING"); 
+                emit.pushToBody(token().text + ");\n");
                 nextToken(); 
             }
             else expression(); 
             endStatement(); 
             break; 
+
         case Ttype::IF:
             print("IF");
             nextToken(); 
-            activeIfs++; 
+            blockDepth++; 
             comparison(); 
             if (token().type == Ttype::THEN) print("THEN"); 
             else error("Invalid if statement - Missing THEN"); 
@@ -63,8 +91,8 @@ void Parser::statement() {
         case Ttype::ENDIF:
             print("ENDIF");
             while (token().type == Ttype::ENDIF) {
-                if (activeIfs <= 0) error("Invalid if statement - Extra ENDIF"); 
-                activeIfs--;
+                if (blockDepth <= 0) error("Invalid if statement - Extra ENDIF"); 
+                blockDepth--; updateIdents(); 
                 nextToken(); 
             }
             endStatement(); 
@@ -72,7 +100,7 @@ void Parser::statement() {
         case Ttype::WHILE:
             print("WHILE"); 
             nextToken(); 
-            activeWhiles++; 
+            blockDepth++;
             comparison(); 
             if (token().type == Ttype::REPEAT) print("REPEAT"); 
             else error("Invalid while loop - Missing REPEAT"); 
@@ -82,20 +110,13 @@ void Parser::statement() {
         case Ttype::ENDWHILE:
             print("ENDWHILE");
             while (token().type == Ttype::ENDWHILE) {
-                if (activeWhiles <= 0) error("Invalid while loop - Extra ENDWHILE"); 
-                activeWhiles--;
+                if (blockDepth <= 0) error("Invalid while loop - Extra ENDWHILE"); 
+                blockDepth--; updateIdents(); 
                 nextToken(); 
             }
             endStatement(); 
             break; 
-        case Ttype::LABEL:
-            print("LABEL"); 
-            nextToken(); 
-            if (token().type == Ttype::IDENT) print("IDENT"); 
-            else error("Invalid declaration - Missing identifier"); 
-            nextToken(); 
-            endStatement();
-            break; 
+        
         // case Ttype::GOTO:
         //     print("GOTO"); 
         //     nextToken(); 
@@ -104,11 +125,22 @@ void Parser::statement() {
         //     nl(); 
         //     statement(); 
         //     break; 
+
+        case Ttype::LABEL:
+            print("LABEL"); 
+            nextToken(); 
+            if (token().type == Ttype::IDENT) print("IDENT"); 
+            else error("Invalid declaration - Missing identifier"); 
+            addIdent(token().text); 
+            nextToken(); 
+            endStatement();
+            break; 
         case Ttype::LET:
             print("LET"); 
             nextToken(); 
             if (token().type == Ttype::IDENT) print("IDENT"); 
             else error("Invalid assignment - Missing identifier"); 
+            if (!identExists(token().text)) addIdent(token().text); 
             nextToken(); 
             if (token().type == Ttype::EQ) print("=");
             else error("Invalid assignment - Missing ="); 
@@ -121,6 +153,7 @@ void Parser::statement() {
             nextToken(); 
             if (token().type == Ttype::IDENT) print("IDENT"); 
             else error("Invalid input - Missing identifier"); 
+            addIdent(token().text); 
             nextToken(); 
             endStatement();
             break; 
@@ -153,19 +186,19 @@ void Parser::comparison() {
 }
 void Parser::expression() {
     term(); 
-    if (token().type == Ttype::PLUS) print("PLUS"); 
-    else if (token().type == Ttype::MINUS) print("MINUS"); 
-    else return; 
-    nextToken(); 
-    term(); 
+    while (token().type == Ttype::PLUS || token().type == Ttype::MINUS) {
+        print("PLUS/MINUS"); 
+        nextToken(); 
+        term(); 
+    }
 }
 void Parser::term() {
     unary(); 
-    if (token().type == Ttype::ASTERISK) print("MULTIPLY"); 
-    else if (token().type == Ttype::SLASH) print("DIVIDE"); 
-    else return; 
-    nextToken(); 
-    unary(); 
+    while (token().type == Ttype::ASTERISK || token().type == Ttype::SLASH) {
+        print("MULTIPLY/DIVIDE"); 
+        nextToken(); 
+        unary(); 
+    }
 }
 void Parser::unary() {
     if (token().type == Ttype::MINUS) {
@@ -175,15 +208,19 @@ void Parser::unary() {
     primary(); 
 }
 void Parser::primary() {
-    if (token().type == Ttype::NUMBER) print("NUMBER"); 
-    else if (token().type == Ttype::IDENT) print("IDENT"); 
+    if (token().type == Ttype::INTEGER || token().type == Ttype::FLOAT) {
+        print("INTEGER/FLOAT"); 
+    }
+    else if (token().type == Ttype::IDENT) {
+        if (!identExists(token().text)) error("Invalid primary - Using undefined identifier"); 
+        print("IDENT"); 
+    }
     else error("Invalid primary - Missing number or identifier"); 
     nextToken(); 
 }
 void Parser::nl() {
     if (token().type == Ttype::EOTF) {
-        if (activeIfs > 0) error("Invalid if statement(s) - Missing ENDIF"); 
-        if (activeWhiles > 0) error("Invalid while loop(s) - Missing ENDWHILE"); 
+        if (blockDepth > 0) error("Invalid block depth - Missing END(s)"); 
         success(); 
     }
     if (token().type != Ttype::NEWLINE) error("Invalid formatting: Missing new line"); 
@@ -191,6 +228,7 @@ void Parser::nl() {
         nextToken(); 
     } while (token().type == Ttype::NEWLINE); 
     print("NEWLINE"); 
+    emit.pushToBody("\n");
 }
 
 Parser::Parser(std::vector<Token> _tokens) {

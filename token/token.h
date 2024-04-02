@@ -1,7 +1,7 @@
 #pragma once
 
 enum class Ttype {
-    EOTF = 0, NEWLINE, NUMBER, IDENT, STRING,
+    EOTF = 0, NEWLINE, FLOAT, INTEGER, IDENT, STRING,
     // Keywords.
     LABEL, GOTO, PRINT, INPUT, LET, IF, 
     THEN, ENDIF, WHILE, REPEAT, ENDWHILE,
