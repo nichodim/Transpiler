@@ -135,7 +135,7 @@ void Parser::statement() {
 
         case Ttype::LABEL:
             print("LABEL"); 
-            emit.pushToBody("auto ");
+            emit.pushToBody("float ");
             nextToken(); 
             if (token().type == Ttype::IDENT) print("IDENT"); 
             else error("Invalid declaration - Missing identifier"); 
@@ -146,11 +146,12 @@ void Parser::statement() {
             break; 
         case Ttype::LET:
             print("LET"); 
-            emit.pushToBody("auto ");
             nextToken(); 
             if (token().type == Ttype::IDENT) print("IDENT"); 
             else error("Invalid assignment - Missing identifier"); 
-            if (!identExists(token().text)) addIdent(token().text); 
+            if (!identExists(token().text)) {
+                addIdent(token().text); emit.pushToBody("float ");
+            }
             emit.pushToBody(token().text);
             nextToken(); 
             if (token().type == Ttype::EQ) print("=");
@@ -168,7 +169,7 @@ void Parser::statement() {
             if (token().type == Ttype::IDENT) print("IDENT"); 
             else error("Invalid input - Missing identifier"); 
             if (!identExists(token().text)) addIdent(token().text); 
-            emit.pushToBody("\"%v\",&" + token().text + ");");
+            emit.pushToBody("\"%v\", &" + token().text + ");");
             nextToken(); 
             endStatement();
             break; 
