@@ -2,18 +2,18 @@
 int main(void){
 float a = 0;
 while (a < 1){
-printf("Entern umbero fs cores:");
+printf("Enter number of scores: ");
 scanf("%v", &a);
 }
 float b = 0;
 float s = 0;
-printf("Entero nev aluea ta t ime:");
+printf("Enter one value at a time: ");
 while (b < a){
 scanf("%v", &c);
 s = s + c;
 b = b + 1;
 }
-printf("Average:");
+printf("Average: ");
 printf(s / a);
 return 0;
 }

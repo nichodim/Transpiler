@@ -20,7 +20,6 @@ private:
     void nextChar(); // returns errors
     std::string peek(unsigned short depth);
     char peek();
-    char rawPeek();
 
     // When tokens build on previous tokens, pass culminated string of tokens and each type short -> big
     void pushMultiToken(std::string text, std::vector<Ttype> types);
